@@ -1,0 +1,2 @@
+applauncher==1.23
+APScheduler==3.5.1
