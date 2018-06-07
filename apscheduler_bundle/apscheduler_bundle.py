@@ -1,13 +1,14 @@
-import zope.event.classhandler
-from applauncher.kernel import KernelReadyEvent, Configuration, KernelShutdownEvent, Kernel
+from applauncher.kernel import Configuration, KernelReadyEvent, KernelShutdownEvent
 import inject
 import logging
 from apscheduler.schedulers.background import BackgroundScheduler
 
+
 class Scheduler(object):
     pass
 
-class APScheudulerBundle(object):
+
+class APSchedulerBundle(object):
 
     def __init__(self):
 
@@ -26,9 +27,11 @@ class APScheudulerBundle(object):
         self.injection_bindings = {
             Scheduler: self.scheduler
         }
-        zope.event.classhandler.handler(KernelReadyEvent, self.kernel_ready)
-        zope.event.classhandler.handler(KernelShutdownEvent, self.kernel_shutdown)
 
+        self.event_listeners = [
+            (KernelReadyEvent, self.kernel_ready),
+            (KernelShutdownEvent, self.kernel_shutdown)
+        ]
 
     def kernel_shutdown(self, event):
         self.scheduler.shutdown()
@@ -49,4 +52,3 @@ class APScheudulerBundle(object):
         apsconfig["apscheduler.job_defaults.max_instances"] = config.max_instances
         apsconfig["apscheduler.timezone"] = config.timezone
         return apsconfig
-

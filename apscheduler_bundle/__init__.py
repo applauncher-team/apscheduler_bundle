@@ -1,1 +1,1 @@
-from .bundle import APScheudulerBundle, Scheduler
+from .apscheduler_bundle import APSchedulerBundle, Scheduler
