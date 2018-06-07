@@ -2,7 +2,7 @@ from setuptools import setup
 setup(
     name='apscheduler_bundle',
     packages=['apscheduler_bundle'],
-    version='1.1.2-rc',
+    version='1.1.2',
     description='APScheduler support for applauncher',
     author='Alvaro Garcia Gomez',
     author_email='maxpowel@gmail.com',

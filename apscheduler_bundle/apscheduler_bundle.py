@@ -1,7 +1,13 @@
-from applauncher.kernel import Configuration, KernelReadyEvent, KernelShutdownEvent
 import inject
+from applauncher.kernel import Kernel
+from applauncher.kernel import Configuration
+
+from applauncher.kernel import KernelReadyEvent, KernelShutdownEvent
+
 import logging
+
 from apscheduler.schedulers.background import BackgroundScheduler
+from threading import Lock
 
 
 class Scheduler(object):
@@ -11,7 +17,6 @@ class Scheduler(object):
 class APSchedulerBundle(object):
 
     def __init__(self):
-
         self.config_mapping = {
             "apscheduler": {
                 "jobstores": "",
@@ -32,15 +37,23 @@ class APSchedulerBundle(object):
             (KernelReadyEvent, self.kernel_ready),
             (KernelShutdownEvent, self.kernel_shutdown)
         ]
+        self.bundle_lock = Lock()
+        self.bundle_lock.acquire()
 
     def kernel_shutdown(self, event):
-        self.scheduler.shutdown()
+        self.bundle_lock.release()
 
     @inject.params(config=Configuration)
-    def kernel_ready(self, event, config):
+    @inject.params(kernel=Kernel)
+    def kernel_ready(self, event, config, kernel):
         self.scheduler.configure(self.build_config(config.apscheduler))
-        self.scheduler.start()
         logging.info("APScheduler ready")
+        kernel.run_service(self.run_service)
+
+    def run_service(self):
+        self.scheduler.start()
+        self.bundle_lock.acquire()
+        self.scheduler.shutdown()
 
     def build_config(self, config):
         apsconfig = {}
